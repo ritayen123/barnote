@@ -9,7 +9,9 @@ import type { Cocktail, DrinkRecord } from "../../../lib/types";
 import ProgressBar from "../../../components/ui/ProgressBar";
 import StarRating from "../../../components/ui/StarRating";
 import Button from "../../../components/ui/Button";
+import TasteBars from "../../../components/ui/TasteBars";
 import ShareCard from "../../../components/share/ShareCard";
+import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/cocktail-desc";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
@@ -88,11 +90,8 @@ export default function HomePage() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium">{rec.cocktail.nameZh}</p>
+                    <p className="font-medium text-lg">{rec.cocktail.nameZh}</p>
                     <p className="text-text-muted text-sm">{rec.cocktail.nameEn}</p>
-                    <p className="text-text-muted text-xs mt-1">
-                      {rec.cocktail.baseSpirit} · {rec.cocktail.category}
-                    </p>
                   </div>
                   <div className="text-right ml-3 shrink-0">
                     <span className="inline-block bg-accent/15 text-accent text-xs font-medium px-2.5 py-1 rounded-full">
@@ -100,12 +99,20 @@ export default function HomePage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5 mt-2.5">
-                  {rec.cocktail.flavorTags.map((tag) => (
-                    <span key={tag} className="text-xs px-2 py-0.5 bg-bg-input rounded-full text-text-secondary">
-                      {tag}
-                    </span>
-                  ))}
+
+                <p className="text-text-secondary text-sm mt-2">
+                  {getBaseDescription(rec.cocktail.baseSpirit)} · {getCocktailDescription(rec.cocktail)}
+                </p>
+
+                <div className="flex justify-between items-end mt-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {rec.cocktail.flavorTags.map((tag) => (
+                      <span key={tag} className="text-xs px-2 py-0.5 bg-bg-input rounded-full text-text-secondary">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <TasteBars cocktail={rec.cocktail} />
                 </div>
               </button>
             ))}

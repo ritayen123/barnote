@@ -10,6 +10,8 @@ import Button from "../../../components/ui/Button";
 import StarRating from "../../../components/ui/StarRating";
 import SliderInput from "../../../components/ui/SliderInput";
 import FlavorTagPicker from "../../../components/ui/FlavorTagPicker";
+import TasteBars from "../../../components/ui/TasteBars";
+import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/cocktail-desc";
 
 function RecordPageInner() {
   const searchParams = useSearchParams();
@@ -166,10 +168,23 @@ function RecordPageInner() {
             <button
               key={c.id}
               onClick={() => setSelectedCocktail(c)}
-              className="w-full bg-bg-card rounded-xl p-3 text-left border border-border hover:border-accent transition-colors"
+              className="w-full bg-bg-card rounded-xl p-3.5 text-left border border-border hover:border-accent transition-colors"
             >
-              <p className="font-medium">{c.nameZh}</p>
-              <p className="text-text-muted text-sm">{c.nameEn} · {c.baseSpirit}</p>
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium">{c.nameZh}</p>
+                  <p className="text-text-muted text-sm">{c.nameEn}</p>
+                  <p className="text-text-muted text-xs mt-0.5">{getBaseDescription(c.baseSpirit)} · {c.category}</p>
+                </div>
+                <TasteBars cocktail={c} />
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {c.flavorTags.map((tag) => (
+                  <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-bg-input rounded-full text-text-muted">
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </button>
           ))}
         </div>
@@ -194,16 +209,39 @@ function RecordPageInner() {
   // Mode selection
   if (mode === "select" && (selectedCocktail || customName)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 space-y-6">
-        <div className="text-center">
-          <p className="text-text-muted text-sm mb-1">你選了</p>
+      <div className="min-h-screen flex flex-col justify-center px-6 space-y-6">
+        {/* Cocktail info card */}
+        <div className="bg-bg-card rounded-2xl p-5 border border-border">
+          <p className="text-text-muted text-xs mb-1">你選了</p>
           <h2 className="text-2xl font-bold">
             {selectedCocktail?.nameZh || customName}
           </h2>
           {selectedCocktail && (
-            <p className="text-text-muted text-sm mt-1">{selectedCocktail.nameEn}</p>
+            <>
+              <p className="text-text-muted text-sm mt-0.5">{selectedCocktail.nameEn}</p>
+
+              <p className="text-text-secondary text-sm mt-3">
+                {getBaseDescription(selectedCocktail.baseSpirit)} · {selectedCocktail.category}
+              </p>
+              <p className="text-text-secondary text-sm mt-1">
+                {getCocktailDescription(selectedCocktail)}
+              </p>
+
+              {/* Taste bars */}
+              <div className="flex items-center gap-4 mt-4">
+                <TasteBars cocktail={selectedCocktail} />
+                <div className="flex-1 flex flex-wrap gap-1.5">
+                  {selectedCocktail.flavorTags.map((tag) => (
+                    <span key={tag} className="text-xs px-2 py-0.5 bg-bg-input rounded-full text-text-secondary">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
+
         <div className="w-full space-y-3">
           <Button fullWidth size="lg" onClick={() => setMode("quick")}>
             ⚡ 快速記錄（30秒）

@@ -1,0 +1,18 @@
+import Dexie, { type EntityTable } from "dexie";
+import type { Cocktail, User, DrinkRecord, Bar } from "../types";
+
+const db = new Dexie("SipNoteDB") as Dexie & {
+  cocktails: EntityTable<Cocktail, "id">;
+  users: EntityTable<User, "id">;
+  records: EntityTable<DrinkRecord, "id">;
+  bars: EntityTable<Bar, "id">;
+};
+
+db.version(1).stores({
+  cocktails: "id, nameEn, nameZh, category, baseSpirit",
+  users: "id, username",
+  records: "id, userId, cocktailId, barId, recordedAt",
+  bars: "id, name, city, googlePlaceId",
+});
+
+export { db };

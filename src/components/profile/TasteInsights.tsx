@@ -1,5 +1,7 @@
 "use client";
 
+import { TrophyIcon, CompassIcon, BarChartIcon } from "../ui/Icons";
+
 interface TasteInsightsProps {
   vector: number[];
   recordCount: number;
@@ -36,7 +38,9 @@ export default function TasteInsights({ vector, recordCount }: TasteInsightsProp
 
       <div className="space-y-3 text-sm">
         <div className="flex items-start gap-3">
-          <span className="text-lg">👑</span>
+          <div className="text-accent flex-shrink-0 mt-0.5">
+            <TrophyIcon size={20} />
+          </div>
           <div>
             <p className="text-text-primary">{getDescription(top.name, top.value)}</p>
             <p className="text-text-muted text-xs">{top.name}偏好值 {top.value.toFixed(1)}/5</p>
@@ -44,7 +48,9 @@ export default function TasteInsights({ vector, recordCount }: TasteInsightsProp
         </div>
 
         <div className="flex items-start gap-3">
-          <span className="text-lg">💡</span>
+          <div className="text-accent flex-shrink-0 mt-0.5">
+            <CompassIcon size={20} />
+          </div>
           <div>
             <p className="text-text-primary">{getDescription(low.name, low.value)}</p>
             <p className="text-text-muted text-xs">{low.name}偏好值 {low.value.toFixed(1)}/5</p>
@@ -53,7 +59,9 @@ export default function TasteInsights({ vector, recordCount }: TasteInsightsProp
 
         {recordCount >= 10 && (
           <div className="flex items-start gap-3">
-            <span className="text-lg">📊</span>
+            <div className="text-accent flex-shrink-0 mt-0.5">
+              <BarChartIcon size={20} />
+            </div>
             <p className="text-text-primary">
               你已經記錄了 {recordCount} 杯調酒，口味圖譜越來越精準了！
             </p>

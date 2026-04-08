@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FLAVOR_CATEGORIES } from "../../lib/types";
+import { ChevronDownIcon, XIcon } from "./Icons";
 
 interface FlavorTagPickerProps {
   selected: string[];
@@ -14,7 +15,21 @@ export default function FlavorTagPicker({
   onChange,
   max = 5,
 }: FlavorTagPickerProps) {
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(["柑橘類", "果香類", "草本類"])
+  );
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
+  };
 
   const toggle = (tag: string) => {
     if (selected.includes(tag)) {
@@ -40,7 +55,7 @@ export default function FlavorTagPicker({
               onClick={() => toggle(tag)}
               className="px-2.5 py-1 bg-accent/20 text-accent text-xs rounded-full border border-accent/40 hover:bg-accent/30"
             >
-              {tag} ✕
+              {tag} <XIcon size={10} className="inline ml-0.5" />
             </button>
           ))}
         </div>
@@ -51,9 +66,7 @@ export default function FlavorTagPicker({
           <div key={category}>
             <button
               type="button"
-              onClick={() =>
-                setExpandedCategory(expandedCategory === category ? null : category)
-              }
+              onClick={() => toggleCategory(category)}
               className="w-full flex justify-between items-center py-2 px-3 bg-bg-input rounded-lg text-sm hover:bg-bg-card"
             >
               <span>{category}</span>
@@ -63,10 +76,10 @@ export default function FlavorTagPicker({
                     {tags.filter((t) => selected.includes(t)).length}
                   </span>
                 )}
-                {expandedCategory === category ? "▲" : "▼"}
+                <ChevronDownIcon size={14} className={`transition-transform ${expandedCategories.has(category) ? "rotate-180" : ""}`} />
               </span>
             </button>
-            {expandedCategory === category && (
+            {expandedCategories.has(category) && (
               <div className="flex flex-wrap gap-1.5 p-2">
                 {tags.map((tag) => (
                   <button

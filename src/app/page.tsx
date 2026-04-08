@@ -7,6 +7,7 @@ import OnboardingFlow from "../components/onboarding/OnboardingFlow";
 import type { OnboardingAnswer } from "../lib/types";
 import { userService } from "../lib/services/user-service";
 import { useRouter } from "next/navigation";
+import { CocktailIcon } from "../components/ui/Icons";
 
 function AppEntry() {
   const { user, loading, refreshUser } = useApp();
@@ -38,7 +39,9 @@ function AppEntry() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🍸</div>
+          <div className="mb-4 animate-pulse flex justify-center">
+            <CocktailIcon size={48} color="#d4a053" />
+          </div>
           <p className="text-text-muted">載入中...</p>
         </div>
       </div>

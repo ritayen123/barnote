@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cocktailService } from "../../../lib/services/cocktail-service";
 import { recordService } from "../../../lib/services/record-service";
@@ -13,6 +13,54 @@ import FlavorTagPicker from "../../../components/ui/FlavorTagPicker";
 import TasteBars from "../../../components/ui/TasteBars";
 import { useApp } from "../../../lib/context/AppContext";
 import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/cocktail-desc";
+import {
+  CocktailIcon,
+  ZapIcon,
+  ClipboardIcon,
+  CheckIcon,
+  TrophyIcon,
+  SearchIcon,
+  FilterIcon,
+  ChevronLeftIcon,
+  getBaseColor,
+  RefreshIcon,
+} from "../../../components/ui/Icons";
+
+const CATEGORIES = [
+  "全部",
+  "IBA經典",
+  "IBA當代",
+  "新經典",
+  "居酒屋",
+  "日式",
+  "台灣風味",
+  "甜點系",
+  "經典變奏",
+  "熱帶/Tiki",
+  "低酒精",
+  "純飲威士忌",
+  "特殊風格",
+  "亞洲風味",
+];
+
+const BASE_SPIRITS = [
+  "全部",
+  "Whiskey",
+  "Gin",
+  "Vodka",
+  "Rum",
+  "Tequila",
+  "Brandy",
+  "Multiple",
+  "Champagne",
+  "Wine",
+  "Liqueur",
+  "Beer",
+  "Sake",
+  "Shochu",
+];
+
+const PAGE_SIZE = 20;
 
 function RecordPageInner() {
   const searchParams = useSearchParams();
@@ -20,11 +68,15 @@ function RecordPageInner() {
   const { refreshUser } = useApp();
   const preselectedId = searchParams.get("cocktailId");
 
-  const [mode, setMode] = useState<"select" | "quick" | "full">("select");
+  const [mode, setMode] = useState<"select" | "quick" | "full" | "done">("select");
   const [step, setStep] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Cocktail[]>([]);
   const [allCocktails, setAllCocktails] = useState<Cocktail[]>([]);
+
+  // Filters
+  const [selectedCategory, setSelectedCategory] = useState("全部");
+  const [selectedBaseSpirit, setSelectedBaseSpirit] = useState("全部");
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
   // Record data
   const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
@@ -63,31 +115,50 @@ function RecordPageInner() {
     load();
   }, [preselectedId]);
 
-  const handleSearch = useCallback(
-    (q: string) => {
-      setSearchQuery(q);
-      if (q.length === 0) {
-        setSearchResults(allCocktails.slice(0, 20));
-      } else {
-        const lower = q.toLowerCase();
-        setSearchResults(
-          allCocktails.filter(
-            (c) =>
-              c.nameEn.toLowerCase().includes(lower) ||
-              c.nameZh.includes(q) ||
-              c.baseSpirit.toLowerCase().includes(lower)
-          ).slice(0, 20)
-        );
-      }
-    },
-    [allCocktails]
+  // Filtered results with category, base spirit, and search
+  const filteredResults = useMemo(() => {
+    let results = allCocktails;
+
+    if (selectedCategory !== "全部") {
+      results = results.filter((c) => c.category === selectedCategory);
+    }
+    if (selectedBaseSpirit !== "全部") {
+      results = results.filter((c) => c.baseSpirit === selectedBaseSpirit);
+    }
+    if (searchQuery.length > 0) {
+      const lower = searchQuery.toLowerCase();
+      results = results.filter(
+        (c) =>
+          c.nameEn.toLowerCase().includes(lower) ||
+          c.nameZh.includes(searchQuery) ||
+          c.baseSpirit.toLowerCase().includes(lower)
+      );
+    }
+
+    return results;
+  }, [allCocktails, selectedCategory, selectedBaseSpirit, searchQuery]);
+
+  const visibleResults = useMemo(
+    () => filteredResults.slice(0, displayCount),
+    [filteredResults, displayCount]
   );
 
-  useEffect(() => {
-    if (allCocktails.length > 0 && searchResults.length === 0 && !searchQuery) {
-      setSearchResults(allCocktails.slice(0, 20));
-    }
-  }, [allCocktails, searchResults.length, searchQuery]);
+  const hasMore = filteredResults.length > displayCount;
+
+  const handleSearch = useCallback((q: string) => {
+    setSearchQuery(q);
+    setDisplayCount(PAGE_SIZE);
+  }, []);
+
+  const handleCategoryChange = useCallback((cat: string) => {
+    setSelectedCategory(cat);
+    setDisplayCount(PAGE_SIZE);
+  }, []);
+
+  const handleBaseSpiritChange = useCallback((spirit: string) => {
+    setSelectedBaseSpirit(spirit);
+    setDisplayCount(PAGE_SIZE);
+  }, []);
 
   const handleSave = async () => {
     if (overallRating === 0) return;
@@ -130,13 +201,38 @@ function RecordPageInner() {
 
     if (unlockedFeature) {
       setUnlocked(unlockedFeature);
-    } else {
-      router.push("/home");
     }
+
+    setSaving(false);
+    setMode("done");
   };
 
-  // Unlock celebration
-  if (unlocked) {
+  // Reset all state for a new record
+  const handleRecordAnother = () => {
+    setSelectedCocktail(null);
+    setCustomName("");
+    setOverallRating(0);
+    setAcidityRating(3);
+    setSweetnessRating(3);
+    setBitternessRating(3);
+    setSaltinessRating(3);
+    setStrengthRating(3);
+    setTexture("medium");
+    setTemperatureFeel("neutral");
+    setFlavorTags([]);
+    setOccasion("");
+    setPriceRange("");
+    setBarName("");
+    setBarAmbiance(3);
+    setBarServiceRating(3);
+    setBarFood(3);
+    setStep(0);
+    setUnlocked(null);
+    setMode("select");
+  };
+
+  // ── Completion page ──
+  if (mode === "done") {
     const featureNames: Record<string, string> = {
       taste_profile: "個人口味圖譜",
       taste_insights: "口味分析洞察",
@@ -144,30 +240,137 @@ function RecordPageInner() {
       full_report: "完整口味報告",
       bartender_card: "調酒師卡片",
     };
+
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <div className="text-6xl mb-6">🎉</div>
-        <h2 className="text-2xl font-bold mb-2">解鎖新功能！</h2>
-        <p className="text-accent text-lg mb-8">{featureNames[unlocked] || unlocked}</p>
-        <Button onClick={() => router.push("/home")} size="lg">回到首頁</Button>
+        {/* Success icon */}
+        <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-4">
+          <CheckIcon size={32} color="var(--accent)" />
+        </div>
+
+        <h2 className="text-2xl font-bold mb-1">記錄完成</h2>
+
+        {/* Cocktail summary */}
+        <div className="bg-bg-card rounded-2xl p-5 border border-border w-full mt-4">
+          <p className="text-text-muted text-xs mb-1">你喝了</p>
+          <p className="text-lg font-semibold">
+            {selectedCocktail?.nameZh || customName || "自訂調酒"}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <StarRating value={overallRating} onChange={() => {}} size="sm" />
+            <span className="text-text-muted text-sm">{overallRating}/5</span>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-border flex items-center gap-2">
+            <RefreshIcon size={14} color="var(--accent)" />
+            <span className="text-sm text-text-secondary">口味向量已更新</span>
+          </div>
+        </div>
+
+        {/* Unlock celebration */}
+        {unlocked && (
+          <div className="bg-bg-card rounded-2xl p-5 border border-accent/40 w-full mt-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-3">
+              <TrophyIcon size={24} color="var(--accent)" />
+            </div>
+            <p className="text-sm text-text-muted mb-1">解鎖新功能</p>
+            <p className="text-accent font-semibold text-lg">
+              {featureNames[unlocked] || unlocked}
+            </p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="w-full space-y-3 mt-8">
+          <Button fullWidth size="lg" onClick={() => router.push("/home")}>
+            回到首頁
+          </Button>
+          <Button fullWidth size="lg" variant="secondary" onClick={handleRecordAnother}>
+            繼續記錄
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // Step: Select cocktail
+  // ── Step: Select cocktail ──
   if (!selectedCocktail && !customName && mode === "select") {
     return (
       <div className="px-4 py-6 space-y-4">
         <h1 className="text-xl font-bold">記錄一杯調酒</h1>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="搜尋調酒名稱..."
-          className="w-full px-4 py-3 bg-bg-input border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
-        />
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-          {searchResults.map((c) => (
+
+        {/* Category filter tabs */}
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          <div className="flex gap-2 pb-1 w-max">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryChange(cat)}
+                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap border transition-colors ${
+                  selectedCategory === cat
+                    ? "bg-accent text-white border-accent"
+                    : "bg-bg-card text-text-secondary border-border hover:border-text-muted"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Base spirit filter pills */}
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          <div className="flex gap-2 pb-1 w-max">
+            {BASE_SPIRITS.map((spirit) => (
+              <button
+                key={spirit}
+                onClick={() => handleBaseSpiritChange(spirit)}
+                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap border transition-colors flex items-center gap-1.5 ${
+                  selectedBaseSpirit === spirit
+                    ? "bg-accent text-white border-accent"
+                    : "bg-bg-card text-text-secondary border-border hover:border-text-muted"
+                }`}
+              >
+                {spirit !== "全部" && (
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: getBaseColor(spirit) }}
+                  />
+                )}
+                {spirit === "全部" ? "全部基酒" : getBaseDescription(spirit).replace("基底", "")}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Search input */}
+        <div className="relative">
+          <SearchIcon
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="搜尋調酒名稱..."
+            className="w-full pl-10 pr-4 py-3 bg-bg-input border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+          />
+        </div>
+
+        {/* Results count */}
+        <div className="flex items-center gap-1.5 text-xs text-text-muted">
+          <FilterIcon size={12} />
+          <span>
+            {filteredResults.length} 款調酒
+            {selectedCategory !== "全部" && ` / ${selectedCategory}`}
+            {selectedBaseSpirit !== "全部" && ` / ${getBaseDescription(selectedBaseSpirit).replace("基底", "")}`}
+          </span>
+        </div>
+
+        {/* Results list */}
+        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+          {visibleResults.map((c) => (
             <button
               key={c.id}
               onClick={() => setSelectedCocktail(c)}
@@ -177,13 +380,18 @@ function RecordPageInner() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium">{c.nameZh}</p>
                   <p className="text-text-muted text-sm">{c.nameEn}</p>
-                  <p className="text-text-muted text-xs mt-0.5">{getBaseDescription(c.baseSpirit)} · {c.category}</p>
+                  <p className="text-text-muted text-xs mt-0.5">
+                    {getBaseDescription(c.baseSpirit)} · {c.category}
+                  </p>
                 </div>
                 <TasteBars cocktail={c} />
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {c.flavorTags.map((tag) => (
-                  <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-bg-input rounded-full text-text-muted">
+                  <span
+                    key={tag}
+                    className="text-[10px] px-1.5 py-0.5 bg-bg-input rounded-full text-text-muted"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -191,12 +399,25 @@ function RecordPageInner() {
             </button>
           ))}
         </div>
-        <div className="pt-2 border-t border-border">
+
+        {/* Show more button */}
+        {hasMore && (
+          <button
+            onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+            className="w-full py-2.5 text-sm text-accent hover:text-accent/80 transition-colors border border-border rounded-xl bg-bg-card"
+          >
+            顯示更多（還有 {filteredResults.length - displayCount} 款）
+          </button>
+        )}
+
+        {/* Custom cocktail input — moved to bottom */}
+        <div className="pt-3 border-t border-border space-y-1.5">
+          <p className="text-sm text-text-muted">喝了菜單上沒有的酒？</p>
           <input
             type="text"
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
-            placeholder="或手動輸入酒名..."
+            placeholder="手動輸入酒名..."
             className="w-full px-4 py-3 bg-bg-input border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
             onKeyDown={(e) => {
               if (e.key === "Enter" && customName.trim()) {
@@ -209,7 +430,7 @@ function RecordPageInner() {
     );
   }
 
-  // Mode selection
+  // ── Mode selection ──
   if (mode === "select" && (selectedCocktail || customName)) {
     return (
       <div className="min-h-screen flex flex-col justify-center px-6 space-y-6">
@@ -235,7 +456,10 @@ function RecordPageInner() {
                 <TasteBars cocktail={selectedCocktail} />
                 <div className="flex-1 flex flex-wrap gap-1.5">
                   {selectedCocktail.flavorTags.map((tag) => (
-                    <span key={tag} className="text-xs px-2 py-0.5 bg-bg-input rounded-full text-text-secondary">
+                    <span
+                      key={tag}
+                      className="text-xs px-2 py-0.5 bg-bg-input rounded-full text-text-secondary"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -247,10 +471,16 @@ function RecordPageInner() {
 
         <div className="w-full space-y-3">
           <Button fullWidth size="lg" onClick={() => setMode("quick")}>
-            ⚡ 快速記錄（30秒）
+            <span className="inline-flex items-center gap-2">
+              <ZapIcon size={18} />
+              快速記錄（30秒）
+            </span>
           </Button>
           <Button fullWidth size="lg" variant="secondary" onClick={() => setMode("full")}>
-            📝 完整記錄（2分鐘）
+            <span className="inline-flex items-center gap-2">
+              <ClipboardIcon size={18} />
+              完整記錄（2分鐘）
+            </span>
           </Button>
         </div>
         <button
@@ -258,15 +488,16 @@ function RecordPageInner() {
             setSelectedCocktail(null);
             setCustomName("");
           }}
-          className="text-text-muted text-sm hover:text-text-secondary"
+          className="inline-flex items-center gap-1 text-text-muted text-sm hover:text-text-secondary"
         >
-          ← 重新選擇
+          <ChevronLeftIcon size={16} />
+          重新選擇
         </button>
       </div>
     );
   }
 
-  // Quick mode
+  // ── Quick mode ──
   if (mode === "quick") {
     return (
       <div className="min-h-screen flex flex-col px-6 py-8">
@@ -306,16 +537,17 @@ function RecordPageInner() {
           </Button>
           <button
             onClick={() => setMode("select")}
-            className="w-full text-text-muted text-sm hover:text-text-secondary py-2"
+            className="w-full inline-flex items-center justify-center gap-1 text-text-muted text-sm hover:text-text-secondary py-2"
           >
-            ← 返回
+            <ChevronLeftIcon size={16} />
+            返回
           </button>
         </div>
       </div>
     );
   }
 
-  // Full mode - multi-step
+  // ── Full mode - multi-step ──
   const fullSteps = [
     // Step 0: Rating
     <div key="rating" className="space-y-8">
@@ -329,11 +561,36 @@ function RecordPageInner() {
 
     // Step 1: Taste sliders
     <div key="taste" className="space-y-5">
-      <SliderInput label="酸度" value={acidityRating} onChange={setAcidityRating} labels={["不酸", "很酸"]} />
-      <SliderInput label="甜度" value={sweetnessRating} onChange={setSweetnessRating} labels={["不甜", "很甜"]} />
-      <SliderInput label="苦度" value={bitternessRating} onChange={setBitternessRating} labels={["不苦", "很苦"]} />
-      <SliderInput label="鹹度" value={saltinessRating} onChange={setSaltinessRating} labels={["不鹹", "很鹹"]} />
-      <SliderInput label="烈度" value={strengthRating} onChange={setStrengthRating} labels={["順口", "很烈"]} />
+      <SliderInput
+        label="酸度"
+        value={acidityRating}
+        onChange={setAcidityRating}
+        labels={["幾乎無酸，柔和", "明顯酸感，刺激"]}
+      />
+      <SliderInput
+        label="甜度"
+        value={sweetnessRating}
+        onChange={setSweetnessRating}
+        labels={["不甜，偏乾口", "甜蜜，甜點感"]}
+      />
+      <SliderInput
+        label="苦度"
+        value={bitternessRating}
+        onChange={setBitternessRating}
+        labels={["無苦味", "明顯苦韻，藥草感"]}
+      />
+      <SliderInput
+        label="鹹度"
+        value={saltinessRating}
+        onChange={setSaltinessRating}
+        labels={["無鹹味", "鹹鮮明顯"]}
+      />
+      <SliderInput
+        label="烈度"
+        value={strengthRating}
+        onChange={setStrengthRating}
+        labels={["順口，幾乎沒酒感", "酒感強烈，灼熱"]}
+      />
     </div>,
 
     // Step 2: Flavor tags
@@ -445,7 +702,9 @@ function RecordPageInner() {
         <h1 className="text-lg font-bold">
           {selectedCocktail?.nameZh || customName}
         </h1>
-        <span className="text-sm text-text-muted">{step + 1}/{fullSteps.length}</span>
+        <span className="text-sm text-text-muted">
+          {step + 1}/{fullSteps.length}
+        </span>
       </div>
 
       {/* Step indicator */}
@@ -486,9 +745,10 @@ function RecordPageInner() {
         )}
         <button
           onClick={() => (step > 0 ? setStep(step - 1) : setMode("select"))}
-          className="w-full text-text-muted text-sm hover:text-text-secondary py-2"
+          className="w-full inline-flex items-center justify-center gap-1 text-text-muted text-sm hover:text-text-secondary py-2"
         >
-          ← {step > 0 ? "上一步" : "返回"}
+          <ChevronLeftIcon size={16} />
+          {step > 0 ? "上一步" : "返回"}
         </button>
       </div>
     </div>
@@ -497,7 +757,13 @@ function RecordPageInner() {
 
 export default function RecordPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-5xl animate-pulse">🍸</div></div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <CocktailIcon size={48} className="animate-pulse text-accent" />
+        </div>
+      }
+    >
       <RecordPageInner />
     </Suspense>
   );

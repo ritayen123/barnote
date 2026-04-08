@@ -51,6 +51,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Range slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -70,8 +71,10 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -81,4 +84,108 @@ input[type="range"]::-webkit-slider-thumb {
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 2px;
+}
+
+/* Animated gradient background for auth */
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(
+    135deg,
+    #0f0f0f 0%,
+    #1a1520 25%,
+    #0f0f0f 50%,
+    #1a1a10 75%,
+    #0f0f0f 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
+}
+
+/* Page transition */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+/* Question transition */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Confetti burst */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  position: fixed;
+  top: -10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 2.5s ease-in forwards;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Unlock glow */
+@keyframes unlockGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(212, 160, 83, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(212, 160, 83, 0.5); }
+}
+
+.unlock-glow {
+  animation: unlockGlow 2s ease-in-out infinite;
+}
+
+/* Horizontal scroll - hide scrollbar */
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+.scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* FAB animation */
+@keyframes fabPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.fab-pulse {
+  animation: fabPulse 3s ease-in-out infinite;
 }

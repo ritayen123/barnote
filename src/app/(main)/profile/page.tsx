@@ -13,7 +13,7 @@ import ShareCard from "../../../components/share/ShareCard";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
-  const { user, logout } = useApp();
+  const { user, logout, refreshUser } = useApp();
   const router = useRouter();
   const [records, setRecords] = useState<DrinkRecord[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -21,12 +21,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function load() {
+      await refreshUser();
       const recs = await recordService.getAll();
       setRecords(recs);
       setLoading(false);
     }
     load();
-  }, []);
+  }, [refreshUser]);
 
   if (loading || !user) {
     return (

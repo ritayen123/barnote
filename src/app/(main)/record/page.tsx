@@ -11,11 +11,13 @@ import StarRating from "../../../components/ui/StarRating";
 import SliderInput from "../../../components/ui/SliderInput";
 import FlavorTagPicker from "../../../components/ui/FlavorTagPicker";
 import TasteBars from "../../../components/ui/TasteBars";
+import { useApp } from "../../../lib/context/AppContext";
 import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/cocktail-desc";
 
 function RecordPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { refreshUser } = useApp();
   const preselectedId = searchParams.get("cocktailId");
 
   const [mode, setMode] = useState<"select" | "quick" | "full">("select");
@@ -124,6 +126,7 @@ function RecordPageInner() {
     };
 
     const { unlockedFeature } = await recordService.create(recordData);
+    await refreshUser();
 
     if (unlockedFeature) {
       setUnlocked(unlockedFeature);

@@ -15,12 +15,19 @@ import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/c
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
-  const { user } = useApp();
+  const { user, refreshUser } = useApp();
   const router = useRouter();
   const [records, setRecords] = useState<DrinkRecord[]>([]);
   const [recommendations, setRecommendations] = useState<{ cocktail: Cocktail; similarity: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [shareRecord, setShareRecord] = useState<DrinkRecord | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      await refreshUser();
+    }
+    load();
+  }, [refreshUser]);
 
   useEffect(() => {
     async function load() {

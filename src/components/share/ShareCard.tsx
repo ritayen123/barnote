@@ -11,6 +11,7 @@ import {
   DownloadIcon,
   XIcon,
   CheckIcon,
+  StarIcon,
 } from "../ui/Icons";
 
 interface ShareCardProps {
@@ -214,14 +215,14 @@ export default function ShareCard({
                       @ {record.barName}
                     </p>
                   )}
-                  <div className="flex mt-3">
+                  <div className="flex mt-3 gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <span
+                      <StarIcon
                         key={s}
-                        className={`text-lg ${s <= record.overallRating ? "text-star" : "text-white/20"}`}
-                      >
-                        ★
-                      </span>
+                        size={18}
+                        color={s <= record.overallRating ? "#fbbf24" : "rgba(255,255,255,0.2)"}
+                        filled={s <= record.overallRating}
+                      />
                     ))}
                   </div>
                   {record.flavorTags && record.flavorTags.length > 0 && (

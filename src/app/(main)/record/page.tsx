@@ -11,6 +11,7 @@ import StarRating from "../../../components/ui/StarRating";
 import SliderInput from "../../../components/ui/SliderInput";
 import FlavorTagPicker from "../../../components/ui/FlavorTagPicker";
 import TasteBars from "../../../components/ui/TasteBars";
+import PhotoUpload from "../../../components/ui/PhotoUpload";
 import { useApp } from "../../../lib/context/AppContext";
 import { getCocktailDescription, getBaseDescription } from "../../../lib/utils/cocktail-desc";
 import {
@@ -97,6 +98,7 @@ function RecordPageInner() {
   const [barServiceRating, setBarServiceRating] = useState(3);
   const [barFood, setBarFood] = useState(3);
 
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
   const [unlocked, setUnlocked] = useState<string | null>(null);
 
@@ -179,6 +181,7 @@ function RecordPageInner() {
       barId,
       barName: barName.trim() || undefined,
       overallRating,
+      photoUrl,
       flavorTags: mode === "full" ? flavorTags : [],
       ...(mode === "full" && {
         acidityRating,
@@ -226,6 +229,7 @@ function RecordPageInner() {
     setBarAmbiance(3);
     setBarServiceRating(3);
     setBarFood(3);
+    setPhotoUrl(undefined);
     setStep(0);
     setUnlocked(null);
     setMode("select");
@@ -524,6 +528,11 @@ function RecordPageInner() {
               className="w-full px-4 py-3 bg-bg-input border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
             />
           </div>
+
+          <div>
+            <label className="text-sm text-text-secondary block mb-2">照片（選填）</label>
+            <PhotoUpload value={photoUrl} onChange={setPhotoUrl} />
+          </div>
         </div>
 
         <div className="space-y-3 mt-8">
@@ -549,12 +558,18 @@ function RecordPageInner() {
 
   // ── Full mode - multi-step ──
   const fullSteps = [
-    // Step 0: Rating
+    // Step 0: Rating + Photo
     <div key="rating" className="space-y-8">
       <div className="text-center space-y-3">
         <p className="text-text-secondary">整體評分</p>
         <div className="flex justify-center">
           <StarRating value={overallRating} onChange={setOverallRating} size="lg" />
+        </div>
+      </div>
+      <div className="text-center space-y-3">
+        <p className="text-text-secondary">拍張照片（選填）</p>
+        <div className="flex justify-center">
+          <PhotoUpload value={photoUrl} onChange={setPhotoUrl} />
         </div>
       </div>
     </div>,

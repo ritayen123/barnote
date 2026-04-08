@@ -34,8 +34,8 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
         await userService.register(username.trim());
       }
       onSuccess();
-    } catch {
-      setError("發生錯誤，請再試一次");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "發生錯誤，請再試一次");
     }
     setLoading(false);
   };

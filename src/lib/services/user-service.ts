@@ -8,51 +8,87 @@ const CURRENT_USER_KEY = "sipnote_current_user";
 
 export const userService = {
   async register(username: string): Promise<User> {
+    if (!username.trim()) {
+      throw new Error("暱稱不能為空");
+    }
+    if (username.trim().length < 1 || username.trim().length > 20) {
+      throw new Error("暱稱長度需在 1-20 字之間");
+    }
+
+    // Check duplicate username
+    const existing = await db.users.where("username").equals(username.trim()).first();
+    if (existing) {
+      throw new Error("這個暱稱已經被使用了");
+    }
+
     const user: User = {
       id: uuidv4(),
-      username,
+      username: username.trim(),
       createdAt: new Date().toISOString(),
       onboardingVector: [],
       tasteVector: [],
       recordCount: 0,
       unlockedFeatures: [],
     };
-    await db.users.add(user);
+
+    try {
+      await db.users.add(user);
+    } catch (e) {
+      throw new Error("建立帳號失敗，請再試一次");
+    }
+
     localStorage.setItem(CURRENT_USER_KEY, user.id);
     return user;
   },
 
   async login(username: string): Promise<User | null> {
-    const user = await db.users.where("username").equals(username).first();
-    if (user) {
-      localStorage.setItem(CURRENT_USER_KEY, user.id);
+    if (!username.trim()) return null;
+
+    try {
+      const user = await db.users.where("username").equals(username.trim()).first();
+      if (user) {
+        localStorage.setItem(CURRENT_USER_KEY, user.id);
+      }
+      return user || null;
+    } catch {
+      return null;
     }
-    return user || null;
   },
 
   async getCurrentUser(): Promise<User | null> {
-    const id = localStorage.getItem(CURRENT_USER_KEY);
-    if (!id) return null;
-    return (await db.users.get(id)) || null;
+    try {
+      const id = localStorage.getItem(CURRENT_USER_KEY);
+      if (!id) return null;
+      return (await db.users.get(id)) || null;
+    } catch {
+      return null;
+    }
   },
 
   async completeOnboarding(answers: OnboardingAnswer): Promise<User | null> {
     const user = await this.getCurrentUser();
     if (!user) return null;
 
-    const vector = generateInitialVector(answers);
-    await db.users.update(user.id, {
-      onboardingVector: vector,
-      tasteVector: vector,
-    });
-
-    return this.getCurrentUser();
+    try {
+      const vector = generateInitialVector(answers);
+      await db.users.update(user.id, {
+        onboardingVector: vector,
+        tasteVector: vector,
+      });
+      return this.getCurrentUser();
+    } catch {
+      return null;
+    }
   },
 
   async updateTasteVector(vector: number[]): Promise<void> {
     const user = await this.getCurrentUser();
     if (!user) return;
-    await db.users.update(user.id, { tasteVector: vector });
+    try {
+      await db.users.update(user.id, { tasteVector: vector });
+    } catch {
+      // Silent fail for vector update
+    }
   },
 
   async incrementRecordCount(): Promise<UnlockableFeature | null> {
@@ -68,10 +104,14 @@ export const userService = {
       newFeatures.push(unlocked);
     }
 
-    await db.users.update(user.id, {
-      recordCount: newCount,
-      unlockedFeatures: newFeatures,
-    });
+    try {
+      await db.users.update(user.id, {
+        recordCount: newCount,
+        unlockedFeatures: newFeatures,
+      });
+    } catch {
+      return null;
+    }
 
     return unlocked;
   },
@@ -88,5 +128,15 @@ export const userService = {
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem(CURRENT_USER_KEY);
+  },
+
+  async exportData(): Promise<string> {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("未登入");
+
+    const records = await db.records.where("userId").equals(user.id).toArray();
+    const bars = await db.bars.toArray();
+
+    return JSON.stringify({ user, records, bars }, null, 2);
   },
 };

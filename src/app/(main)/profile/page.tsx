@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useApp } from "../../../lib/context/AppContext";
 import { recordService } from "../../../lib/services/record-service";
+import { userService } from "../../../lib/services/user-service";
 import type { DrinkRecord } from "../../../lib/types";
 import TasteRadar from "../../../components/profile/TasteRadar";
 import TasteInsights from "../../../components/profile/TasteInsights";
@@ -124,15 +125,34 @@ export default function ProfilePage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => {
-            logout();
-            router.push("/");
-          }}
-          className="text-text-muted text-sm hover:text-danger"
-        >
-          登出
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={async () => {
+              try {
+                const data = await userService.exportData();
+                const blob = new Blob([data], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `sipnote-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch { /* silent */ }
+            }}
+            className="text-text-muted text-sm hover:text-accent"
+          >
+            備份資料
+          </button>
+          <button
+            onClick={() => {
+              logout();
+              router.push("/");
+            }}
+            className="text-text-muted text-sm hover:text-danger"
+          >
+            登出
+          </button>
+        </div>
       </div>
 
       {/* Stats Card */}

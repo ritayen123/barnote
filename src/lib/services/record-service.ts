@@ -9,7 +9,11 @@ export const recordService = {
     data: Omit<DrinkRecord, "id" | "userId" | "recordedAt" | "isPublic">
   ): Promise<{ record: DrinkRecord; unlockedFeature: string | null }> {
     const user = await userService.getCurrentUser();
-    if (!user) throw new Error("Not logged in");
+    if (!user) throw new Error("請先登入");
+
+    if (!data.overallRating || data.overallRating < 1 || data.overallRating > 5) {
+      throw new Error("請給予 1-5 星評分");
+    }
 
     const record: DrinkRecord = {
       ...data,
@@ -19,12 +23,20 @@ export const recordService = {
       isPublic: false,
     };
 
-    await db.records.add(record);
+    try {
+      await db.records.add(record);
+    } catch {
+      throw new Error("記錄儲存失敗，請再試一次");
+    }
 
     // Update taste vector based on rating
-    if (record.overallRating !== 3) {
-      const newVector = updateTasteVector(user.tasteVector, record);
-      await userService.updateTasteVector(newVector);
+    try {
+      if (record.overallRating !== 3) {
+        const newVector = updateTasteVector(user.tasteVector, record);
+        await userService.updateTasteVector(newVector);
+      }
+    } catch {
+      // Non-critical: vector update failure shouldn't block record creation
     }
 
     const unlockedFeature = await userService.incrementRecordCount();
@@ -33,17 +45,25 @@ export const recordService = {
   },
 
   async getAll(): Promise<DrinkRecord[]> {
-    const user = await userService.getCurrentUser();
-    if (!user) return [];
-    return db.records
-      .where("userId")
-      .equals(user.id)
-      .reverse()
-      .sortBy("recordedAt");
+    try {
+      const user = await userService.getCurrentUser();
+      if (!user) return [];
+      return db.records
+        .where("userId")
+        .equals(user.id)
+        .reverse()
+        .sortBy("recordedAt");
+    } catch {
+      return [];
+    }
   },
 
   async getById(id: string): Promise<DrinkRecord | undefined> {
-    return db.records.get(id);
+    try {
+      return db.records.get(id);
+    } catch {
+      return undefined;
+    }
   },
 
   async toggleVisibility(id: string): Promise<void> {
@@ -54,17 +74,25 @@ export const recordService = {
   },
 
   async getCount(): Promise<number> {
-    const user = await userService.getCurrentUser();
-    if (!user) return 0;
-    return db.records.where("userId").equals(user.id).count();
+    try {
+      const user = await userService.getCurrentUser();
+      if (!user) return 0;
+      return db.records.where("userId").equals(user.id).count();
+    } catch {
+      return 0;
+    }
   },
 
   async getByBarId(barId: string): Promise<DrinkRecord[]> {
-    const user = await userService.getCurrentUser();
-    if (!user) return [];
-    return db.records
-      .where(["userId", "barId"])
-      .equals([user.id, barId])
-      .toArray();
+    try {
+      const user = await userService.getCurrentUser();
+      if (!user) return [];
+      return db.records
+        .where(["userId", "barId"])
+        .equals([user.id, barId])
+        .toArray();
+    } catch {
+      return [];
+    }
   },
 };

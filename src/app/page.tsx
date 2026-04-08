@@ -8,6 +8,7 @@ import type { OnboardingAnswer } from "../lib/types";
 import { userService } from "../lib/services/user-service";
 import { useRouter } from "next/navigation";
 import { CocktailIcon } from "../components/ui/Icons";
+import { analyticsService, EVENTS } from "../lib/services/analytics-service";
 
 function AppEntry() {
   const { user, loading, refreshUser } = useApp();
@@ -27,10 +28,12 @@ function AppEntry() {
   }, [user, loading, router]);
 
   const handleAuthSuccess = async () => {
+    analyticsService.track(EVENTS.SIGNUP);
     await refreshUser();
   };
 
   const handleOnboardingComplete = async (answers: OnboardingAnswer) => {
+    analyticsService.track(EVENTS.ONBOARDING_COMPLETE);
     await userService.completeOnboarding(answers);
     await refreshUser();
   };

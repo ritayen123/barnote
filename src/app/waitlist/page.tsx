@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import EmailForm from "../../components/waitlist/EmailForm";
 
 export const metadata: Metadata = {
-  title: "SipNote — 加入等待名單",
+  title: "Barnote — 加入等待名單",
   description:
-    "每一杯，都讓你更了解自己。SipNote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
+    "每一杯，都讓你更了解自己。Barnote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
   openGraph: {
-    title: "SipNote — 加入等待名單",
+    title: "Barnote — 加入等待名單",
     description:
-      "每一杯，都讓你更了解自己。SipNote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
+      "每一杯，都讓你更了解自己。Barnote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
     url: "https://cocktail-app-zeta-puce.vercel.app/waitlist",
-    siteName: "SipNote",
+    siteName: "Barnote",
     locale: "zh_TW",
     type: "website",
     images: [
@@ -18,15 +18,15 @@ export const metadata: Metadata = {
         url: "/icons/icon.svg",
         width: 512,
         height: 512,
-        alt: "SipNote Logo",
+        alt: "Barnote Logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "SipNote — 加入等待名單",
+    title: "Barnote — 加入等待名單",
     description:
-      "每一杯，都讓你更了解自己。SipNote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
+      "每一杯，都讓你更了解自己。Barnote 是你的個人調酒筆記本，記錄風味、探索口味圖譜、獲得個人化推薦。",
   },
   keywords: [
     "調酒",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "推薦",
     "cocktail",
     "bar",
-    "SipNote",
+    "Barnote",
     "等待名單",
   ],
 };
@@ -180,7 +180,7 @@ export default function WaitlistPage() {
 
         {/* Brand name */}
         <h1 className="text-2xl font-bold tracking-wide text-text-primary mb-2">
-          SipNote
+          Barnote
         </h1>
 
         {/* Tagline */}
@@ -190,7 +190,7 @@ export default function WaitlistPage() {
 
         {/* Subtitle */}
         <p className="text-text-secondary text-sm text-center leading-relaxed max-w-xs">
-          SipNote 是你的個人調酒筆記本。記錄每一杯的故事與風味，
+          Barnote 是你的個人調酒筆記本。記錄每一杯的故事與風味，
           探索口味圖譜，讓每次品飲都成為一段值得回味的體驗。
         </p>
       </section>
@@ -242,7 +242,7 @@ export default function WaitlistPage() {
       {/* Footer */}
       <footer className="mt-auto py-8 text-center">
         <p className="text-xs text-text-muted">
-          SipNote &mdash; Coming Soon
+          Barnote &mdash; Coming Soon
         </p>
       </footer>
     </div>

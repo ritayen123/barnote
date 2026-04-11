@@ -25,10 +25,10 @@ export default function EmailForm() {
 
     // Store in localStorage
     try {
-      const existing = JSON.parse(localStorage.getItem("sipnote_waitlist") || "[]");
+      const existing = JSON.parse(localStorage.getItem("barnote_waitlist") || "[]");
       if (!existing.includes(trimmed)) {
         existing.push(trimmed);
-        localStorage.setItem("sipnote_waitlist", JSON.stringify(existing));
+        localStorage.setItem("barnote_waitlist", JSON.stringify(existing));
       }
     } catch {
       // If localStorage fails, still show success

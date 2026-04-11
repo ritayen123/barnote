@@ -15,19 +15,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cocktail-app-zeta-puce.vercel.app"),
-  title: "SipNote — 調酒記錄",
+  title: "Barnote — 調酒記錄",
   description: "每一杯，都讓你更了解自己。記錄調酒體驗，探索你的口味圖譜。",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SipNote",
+    title: "Barnote",
   },
   openGraph: {
-    title: "SipNote — 調酒記錄",
+    title: "Barnote — 調酒記錄",
     description: "每一杯，都讓你更了解自己。記錄調酒體驗，探索你的口味圖譜。",
     url: "https://cocktail-app-zeta-puce.vercel.app",
-    siteName: "SipNote",
+    siteName: "Barnote",
     locale: "zh_TW",
     type: "website",
     images: [
@@ -35,13 +35,13 @@ export const metadata: Metadata = {
         url: "/icons/icon.svg",
         width: 512,
         height: 512,
-        alt: "SipNote Logo",
+        alt: "Barnote Logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "SipNote — 調酒記錄",
+    title: "Barnote — 調酒記錄",
     description: "每一杯，都讓你更了解自己。記錄調酒體驗，探索你的口味圖譜。",
   },
   keywords: ["調酒", "雞尾酒", "酒吧", "口味", "記錄", "推薦", "cocktail", "bar"],

@@ -4,7 +4,7 @@ import { UNLOCK_MILESTONES } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { generateInitialVector } from "../recommendation/vector";
 
-const CURRENT_USER_KEY = "sipnote_current_user";
+const CURRENT_USER_KEY = "barnote_current_user";
 
 export const userService = {
   async register(username: string): Promise<User> {

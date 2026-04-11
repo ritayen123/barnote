@@ -1,6 +1,6 @@
 {
-  "name": "SipNote — 調酒記錄",
-  "short_name": "SipNote",
+  "name": "Barnote — 調酒記錄",
+  "short_name": "Barnote",
   "description": "每一杯，都讓你更了解自己。記錄調酒體驗，探索你的口味圖譜。",
   "start_url": "/",
   "display": "standalone",

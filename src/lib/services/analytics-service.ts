@@ -1,4 +1,4 @@
-const ANALYTICS_KEY = "sipnote_analytics";
+const ANALYTICS_KEY = "barnote_analytics";
 
 export interface AnalyticsEvent {
   event: string;

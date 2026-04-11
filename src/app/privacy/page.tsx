@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "隱私權政策 — SipNote",
-  description: "SipNote 隱私權政策",
+  title: "隱私權政策 — Barnote",
+  description: "Barnote 隱私權政策",
 };
 
 export default function PrivacyPage() {
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <section className="space-y-2">
         <h2 className="text-lg font-bold">1. 資料儲存方式</h2>
         <p className="text-text-secondary">
-          SipNote 目前為純前端應用程式，所有資料（包含帳號、記錄、口味圖譜）皆儲存於您的瀏覽器本地儲存空間（IndexedDB），
+          Barnote 目前為純前端應用程式，所有資料（包含帳號、記錄、口味圖譜）皆儲存於您的瀏覽器本地儲存空間（IndexedDB），
           不會傳輸至任何伺服器。
         </p>
       </section>
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
       <section className="space-y-2">
         <h2 className="text-lg font-bold">4. 第三方服務</h2>
         <p className="text-text-secondary">
-          目前 SipNote 不使用任何第三方分析工具或廣告追蹤。未來若整合第三方服務（如 Google Places API），
+          目前 Barnote 不使用任何第三方分析工具或廣告追蹤。未來若整合第三方服務（如 Google Places API），
           將另行告知並更新此政策。
         </p>
       </section>

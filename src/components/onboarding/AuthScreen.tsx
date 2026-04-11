@@ -76,7 +76,7 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
         <div className="flex justify-center mb-5">
           <CocktailIcon size={48} color="#d4a053" />
         </div>
-        <h1 className="text-4xl font-bold text-accent tracking-tight">SipNote</h1>
+        <h1 className="text-4xl font-bold text-accent tracking-tight">Barnote</h1>
         <p className="text-text-secondary mt-3 text-lg">每一杯，都讓你更了解自己</p>
       </div>
 

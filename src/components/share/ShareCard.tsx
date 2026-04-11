@@ -94,7 +94,7 @@ export default function ShareCard({
         backgroundColor: currentStyle.bgColor,
       });
       const link = document.createElement("a");
-      link.download = `sipnote-${type}-${Date.now()}.png`;
+      link.download = `barnote-${type}-${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -108,12 +108,12 @@ export default function ShareCard({
       setSaving(true);
       const blob = await generateImage();
       if (blob) {
-        const file = new File([blob], `sipnote-${type}-${Date.now()}.png`, {
+        const file = new File([blob], `barnote-${type}-${Date.now()}.png`, {
           type: "image/png",
         });
         try {
           await navigator.share({
-            title: "SipNote - 我的調酒記錄",
+            title: "Barnote - 我的調酒記錄",
             files: [file],
           });
         } catch (err) {
@@ -282,7 +282,7 @@ export default function ShareCard({
                   className="text-sm font-bold"
                   style={{ color: currentStyle.accent }}
                 >
-                  SipNote
+                  Barnote
                 </p>
                 <p className="text-[10px] text-white/40">
                   每一杯，都讓你更了解自己

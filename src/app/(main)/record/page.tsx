@@ -109,13 +109,20 @@ function RecordPageInner() {
       results = results.filter((c) => c.baseSpirit === selectedBaseSpirit);
     }
     if (searchQuery.length > 0) {
-      const lower = searchQuery.toLowerCase();
-      results = results.filter(
-        (c) =>
-          c.nameEn.toLowerCase().includes(lower) ||
-          c.nameZh.includes(searchQuery) ||
-          c.baseSpirit.toLowerCase().includes(lower)
-      );
+      const lower = searchQuery.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+      results = results.filter((c) => {
+        const nameNorm = c.nameEn.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const nameZhNorm = c.nameZh.replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+        const baseNorm = c.baseSpirit.toLowerCase();
+        const categoryNorm = c.category.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+        return (
+          nameNorm.includes(lower) ||
+          nameZhNorm.includes(searchQuery) ||
+          baseNorm.includes(lower) ||
+          categoryNorm.includes(lower) ||
+          c.flavorTags.some((t) => t.includes(searchQuery))
+        );
+      });
     }
 
     return results;
@@ -131,6 +138,10 @@ function RecordPageInner() {
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
     setDisplayCount(PAGE_SIZE);
+    // Auto-reset base spirit filter when typing search
+    if (q.length > 0) {
+      setSelectedBaseSpirit("全部");
+    }
   }, []);
 
   const handleBaseSpiritChange = useCallback((spirit: string) => {

@@ -28,23 +28,6 @@ import {
   RefreshIcon,
 } from "../../../components/ui/Icons";
 
-const CATEGORIES = [
-  "全部",
-  "IBA經典",
-  "IBA當代",
-  "新經典",
-  "居酒屋",
-  "日式",
-  "台灣風味",
-  "甜點系",
-  "經典變奏",
-  "熱帶/Tiki",
-  "低酒精",
-  "純飲威士忌",
-  "特殊風格",
-  "亞洲風味",
-];
-
 const BASE_SPIRITS = [
   "全部",
   "Whiskey",
@@ -76,7 +59,6 @@ function RecordPageInner() {
   const [allCocktails, setAllCocktails] = useState<Cocktail[]>([]);
 
   // Filters
-  const [selectedCategory, setSelectedCategory] = useState("全部");
   const [selectedBaseSpirit, setSelectedBaseSpirit] = useState("全部");
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
@@ -123,9 +105,6 @@ function RecordPageInner() {
   const filteredResults = useMemo(() => {
     let results = allCocktails;
 
-    if (selectedCategory !== "全部") {
-      results = results.filter((c) => c.category === selectedCategory);
-    }
     if (selectedBaseSpirit !== "全部") {
       results = results.filter((c) => c.baseSpirit === selectedBaseSpirit);
     }
@@ -140,7 +119,7 @@ function RecordPageInner() {
     }
 
     return results;
-  }, [allCocktails, selectedCategory, selectedBaseSpirit, searchQuery]);
+  }, [allCocktails, selectedBaseSpirit, searchQuery]);
 
   const visibleResults = useMemo(
     () => filteredResults.slice(0, displayCount),
@@ -151,11 +130,6 @@ function RecordPageInner() {
 
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
-    setDisplayCount(PAGE_SIZE);
-  }, []);
-
-  const handleCategoryChange = useCallback((cat: string) => {
-    setSelectedCategory(cat);
     setDisplayCount(PAGE_SIZE);
   }, []);
 
@@ -305,25 +279,6 @@ function RecordPageInner() {
       <div className="px-4 py-6 space-y-4">
         <h1 className="text-xl font-bold">記錄一杯調酒</h1>
 
-        {/* Category filter tabs */}
-        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-          <div className="flex gap-2 pb-1 w-max">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => handleCategoryChange(cat)}
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap border transition-colors ${
-                  selectedCategory === cat
-                    ? "bg-accent text-white border-accent"
-                    : "bg-bg-card text-text-secondary border-border hover:border-text-muted"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Base spirit filter pills */}
         <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
           <div className="flex gap-2 pb-1 w-max">
@@ -369,7 +324,6 @@ function RecordPageInner() {
           <FilterIcon size={12} />
           <span>
             {filteredResults.length} 款調酒
-            {selectedCategory !== "全部" && ` / ${selectedCategory}`}
             {selectedBaseSpirit !== "全部" && ` / ${getBaseDescription(selectedBaseSpirit).replace("基底", "")}`}
           </span>
         </div>

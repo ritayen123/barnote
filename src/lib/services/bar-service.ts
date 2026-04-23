@@ -71,50 +71,19 @@ export const barService = {
   },
 
   async searchGooglePlaces(query: string): Promise<GooglePlaceResult[]> {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-    if (!apiKey || !query.trim()) return [];
+    if (!query.trim()) return [];
 
     try {
-      const response = await fetch(
-        `https://places.googleapis.com/v1/places:searchText`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.addressComponents",
-          },
-          body: JSON.stringify({
-            textQuery: query + " bar",
-            languageCode: "zh-TW",
-            locationBias: {
-              circle: {
-                center: { latitude: 25.033, longitude: 121.565 }, // Taipei
-                radius: 50000,
-              },
-            },
-            maxResultCount: 5,
-          }),
-        }
-      );
+      const response = await fetch("/api/places", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim() }),
+      });
 
       if (!response.ok) return [];
 
       const data = await response.json();
-      if (!data.places) return [];
-
-      return data.places.map((place: { id: string; displayName?: { text: string }; formattedAddress?: string; addressComponents?: { types: string[]; longText: string }[] }) => {
-        const city = place.addressComponents?.find(
-          (c: { types: string[] }) => c.types.includes("administrative_area_level_1")
-        )?.longText || "";
-
-        return {
-          placeId: place.id,
-          name: place.displayName?.text || "",
-          address: place.formattedAddress || "",
-          city,
-        };
-      });
+      return data.places || [];
     } catch {
       return [];
     }

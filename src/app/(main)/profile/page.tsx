@@ -147,8 +147,8 @@ export default function ProfilePage() {
             備份資料
           </button>
           <button
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await logout();
               router.push("/");
             }}
             className="text-text-muted text-sm hover:text-danger"

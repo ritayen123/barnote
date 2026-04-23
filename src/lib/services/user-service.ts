@@ -7,23 +7,15 @@ import { generateInitialVector } from "../recommendation/vector";
 const CURRENT_USER_KEY = "barnote_current_user";
 
 export const userService = {
-  async register(username: string): Promise<User> {
+  async register(username: string, firebaseUid?: string): Promise<User> {
     if (!username.trim()) {
       throw new Error("暱稱不能為空");
-    }
-    if (username.trim().length < 1 || username.trim().length > 20) {
-      throw new Error("暱稱長度需在 1-20 字之間");
-    }
-
-    // Check duplicate username
-    const existing = await db.users.where("username").equals(username.trim()).first();
-    if (existing) {
-      throw new Error("這個暱稱已經被使用了");
     }
 
     const user: User = {
       id: uuidv4(),
       username: username.trim(),
+      firebaseUid,
       createdAt: new Date().toISOString(),
       onboardingVector: [],
       tasteVector: [],
@@ -33,7 +25,7 @@ export const userService = {
 
     try {
       await db.users.add(user);
-    } catch (e) {
+    } catch {
       throw new Error("建立帳號失敗，請再試一次");
     }
 
@@ -43,7 +35,6 @@ export const userService = {
 
   async login(username: string): Promise<User | null> {
     if (!username.trim()) return null;
-
     try {
       const user = await db.users.where("username").equals(username.trim()).first();
       if (user) {
@@ -53,6 +44,23 @@ export const userService = {
     } catch {
       return null;
     }
+  },
+
+  async getByFirebaseUid(uid: string): Promise<User | null> {
+    try {
+      const user = await db.users.where("firebaseUid").equals(uid).first();
+      return user || null;
+    } catch {
+      return null;
+    }
+  },
+
+  async loginByFirebaseUid(uid: string): Promise<User | null> {
+    const user = await this.getByFirebaseUid(uid);
+    if (user) {
+      localStorage.setItem(CURRENT_USER_KEY, user.id);
+    }
+    return user;
   },
 
   async getCurrentUser(): Promise<User | null> {
@@ -87,7 +95,7 @@ export const userService = {
     try {
       await db.users.update(user.id, { tasteVector: vector });
     } catch {
-      // Silent fail for vector update
+      // Silent fail
     }
   },
 

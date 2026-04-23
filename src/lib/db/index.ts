@@ -24,4 +24,12 @@ db.version(2).stores({
   bars: "id, name, city, googlePlaceId",
 });
 
+// v3: add firebaseUid index for auth
+db.version(3).stores({
+  cocktails: "id, nameEn, nameZh, category, baseSpirit, [category+baseSpirit]",
+  users: "id, username, firebaseUid",
+  records: "id, userId, [userId+recordedAt], cocktailId, barId, recordedAt",
+  bars: "id, name, city, googlePlaceId",
+});
+
 export { db };

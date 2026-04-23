@@ -18,6 +18,9 @@ export interface Cocktail {
 export interface User {
   id: string;
   username: string;
+  firebaseUid?: string;
+  email?: string;
+  photoURL?: string;
   createdAt: string;
   onboardingVector: number[];
   tasteVector: number[];

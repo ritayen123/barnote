@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import type { User } from "../types";
 import { userService } from "../services/user-service";
 import { cocktailService } from "../services/cocktail-service";
+import { authService } from "../services/auth-service";
 
 interface AppContextType {
   user: User | null;
@@ -31,14 +32,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function init() {
       await cocktailService.init();
-      await refreshUser();
-      setLoading(false);
+
+      // Listen to Firebase auth state
+      authService.onAuthChange(async (firebaseUser) => {
+        if (firebaseUser) {
+          // Firebase user logged in — check local DB
+          const localUser = await userService.getByFirebaseUid(firebaseUser.uid);
+          if (localUser) {
+            await userService.loginByFirebaseUid(firebaseUser.uid);
+          }
+        }
+        await refreshUser();
+        setLoading(false);
+      });
     }
     init();
   }, [refreshUser]);
 
-  const logout = () => {
-    userService.logout();
+  const logout = async () => {
+    await authService.signOutUser();
     setUser(null);
   };
 
